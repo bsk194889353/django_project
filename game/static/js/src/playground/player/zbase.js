@@ -93,7 +93,7 @@ class Player extends AcGameObject {
         }
 
         this.radius -= damage;
-        if(this.radius<10){
+        if(this.radius<5){
             this.destroy();
             console.log("this",this.radius);
             return false;

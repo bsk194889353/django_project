@@ -265,7 +265,7 @@ class Player extends AcGameObject {
         }
 
         this.radius -= damage;
-        if(this.radius<10){
+        if(this.radius<5){
             this.destroy();
             console.log("this",this.radius);
             return false;
@@ -340,7 +340,7 @@ class FireBall extends AcGameObject {
         this.color = color;
         this.speed = speed ;
         this.move_length = move_length;
-        this.eps = 0.1;
+        this.eps = 1;
         this.damage = damage;
 
     }

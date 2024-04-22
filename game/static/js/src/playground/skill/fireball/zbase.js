@@ -12,7 +12,7 @@ class FireBall extends AcGameObject {
         this.color = color;
         this.speed = speed ;
         this.move_length = move_length;
-        this.eps = 0.1;
+        this.eps = 1;
         this.damage = damage;
 
     }
