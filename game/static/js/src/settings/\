@@ -1,0 +1,54 @@
+class Settings{
+    constructor(root){
+        this.root = root;
+        this.platform  = "WEB";
+        if(this.root.AcWingOS) this.platform = "ACAPP";
+        this.start();
+        this.username = "";
+        this.photo = "";
+
+
+    }
+    start(){
+        this.getinfo();
+    }
+    login(){//打开登陆界面
+
+    }
+
+
+    register(){// 打开注册界面
+
+    }
+    getinfo(){
+        let outer = this;
+        $.ajax({
+            url:"https://app6641.acapp.acwing.com.cn/settings/getinfo/",
+            type:"GET",
+            data:{
+                platform:outer.platform,
+
+            },
+            success:function(resp){
+                console.log(resp);
+                if(resp.result === "success"){
+                    outer.username = resp.username;
+                    outer.photo = resp.photo;
+                    outer.hide();
+                    outer.root.menu.show();
+                } else {
+                    outer.login();
+    
+                }
+            }
+        });
+    }
+    hide(){
+    this.$settings.hide();
+    }
+
+    show(){
+        this.$settings.show();
+    }
+
+}
