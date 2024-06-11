@@ -17,7 +17,7 @@
 
 }
 .ac-game-settings-register{
-    height: 49vh;
+    height: 55vh;
     width: 20vw;
     position: relative;
     top: 50%;
@@ -73,7 +73,7 @@
     
 
 }
-.ac-game-settings-error-messages{
+.ac-game-settings-error-message{
     color:red;
     font-size:2vh;
     display: inline;
