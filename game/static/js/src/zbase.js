@@ -1,6 +1,6 @@
 export class AcGame {
-    constructor(id,acwingOS){
-        this.acwingOS = acwingOS;
+    constructor(id,AcWingOS){
+        this.AcWingOS = AcWingOS;
         this.id = id;
         this.$ac_game = $('#'+id);
         this.menu = new AcGameMenu(this);
