@@ -179,7 +179,6 @@ class Settings{
 
             },
             success: function(resp){
-                console.log(resp);
                 if(resp.result === "success"){
                     location.reload();
                 } else {
@@ -194,9 +193,6 @@ class Settings{
         let password = this.$register_password.val();
         let password_confirm = this.$register_password_confirm.val();
         this.$register_error_message.empty();
-        console.log(username);
-        console.log(password);
-        console.log(password_confirm);
 
         $.ajax({
             url: "https://app6641.acapp.acwing.com.cn/settings/register/",
@@ -208,7 +204,6 @@ class Settings{
 
             },
             success: function(resp){
-                console.log(resp);
                 if(resp.result === "success"){
                     location.reload();
                 } else {
@@ -227,7 +222,6 @@ class Settings{
             url: "https://app6641.acapp.acwing.com.cn/settings/logout/",
             type: "GET",
             success: function(resp){
-                console.log(resp);
                 if(resp.result === "success") {
                     location.reload();
                 }
@@ -253,8 +247,6 @@ class Settings{
         let outer = this;
 
         this.root.AcWingOS.api.oauth2.authorize(appid, redirect_uri, scope, state, function(resp) {
-            console.log("called from acapp_login function");
-            console.log(resp);
             if (resp.result === "success") {
                 outer.username = resp.username;
                 outer.photo = resp.photo;
@@ -301,7 +293,6 @@ class Settings{
 
     getinfo_web(){
         let outer = this;
-        console.log(outer.platform);
         $.ajax({
             url:"https://app6641.acapp.acwing.com.cn/settings/getinfo/",
             type:"GET",
@@ -310,7 +301,6 @@ class Settings{
 
             },
             success:function(resp){
-                console.log(resp);
                 if(resp.result === "success"){
                     outer.username = resp.username;
                     outer.photo = resp.photo;
