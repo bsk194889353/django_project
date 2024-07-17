@@ -49,6 +49,10 @@ class AcGamePlayground {
         this.resize();
         this.players = [];
         this.players.push(new Player(this,this.width/2/this.scale,0.5,0.05,"white",0.15,"me",this.root.settings.username,this.root.settings.photo));
+        this.mode = mode;
+        this.state = "waiting";
+        this.notice_board = new NoticeBoard(this);
+        this.player_count = 0;
 
         if(mode === "single mode")
             for (let i = 0; i < 5; i ++ ) {
