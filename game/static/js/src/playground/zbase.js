@@ -19,11 +19,34 @@ class AcGamePlayground {
 
     start(){
         let outer=this;
+        let uuid = this.create_uuid();
 
-        $(window).resize(function(){
+        $(window).on(`resize.${uuid}`,function(){
+            console.log("resize");
             outer.resize();
         });
+
+
+
+        if(this.root.AcWingOS){
+            this.root.AcWingOS.api.window.on_close(function(){
+                $(window).off(`resize.${uuid}`);
+
+            });
+        }
     }
+
+    create_uuid() {
+        let res = "";
+        for(let i = 0;i < 8 ; i++){
+            let x = parseInt(Math.floor(Math.random()*10));
+            res += x;
+        }
+        return res;
+    }
+
+
+
     resize(){
         this.width = this.$playground.width();
         this.height = this.$playground.height();
@@ -52,6 +75,7 @@ class AcGamePlayground {
         this.mode = mode;
         this.state = "waiting";
         this.notice_board = new NoticeBoard(this);
+        this.score_board = new ScoreBoard(this);
         this.player_count = 0;
 
         if(mode === "single mode")
@@ -73,6 +97,34 @@ class AcGamePlayground {
     }
 
     hide(){
+
+        while(this.players && this.players.length > 0){
+            this.players[0].destroy();
+
+        }
+
+        if(this.game_map){
+            this.game_map.destroy();
+            this.game_map = null;
+
+        }
+
+        if(this.notice_board){
+            this.notice_board.destroy();
+            this.notice_board = null;
+
+
+        }
+        if(this.score_board){
+            this.score_board.destroy();
+            this.score_board = null;
+
+        }
+
+        this.$playground.empty();
+
+
+
         this.$playground.hide();
     }
 }

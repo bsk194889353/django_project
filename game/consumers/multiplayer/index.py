@@ -7,11 +7,9 @@ from thrift import Thrift
 from thrift.transport import TSocket
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
+
 from match_system.src.match_server.match_service import Match
-
 from game.models.player.player import Player
-
-
 from channels.db import database_sync_to_async
 
 class MultiPlayer(AsyncWebsocketConsumer):
@@ -20,7 +18,6 @@ class MultiPlayer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code):
         if self.room_name:
-
             await self.channel_layer.group_discard(self.room_name, self.channel_name);
 
 
@@ -39,9 +36,10 @@ class MultiPlayer(AsyncWebsocketConsumer):
         client = Match.Client(protocol)
 
         def db_get_player():
-            return Player.objects.get(user__username = data['username'])
+            return Player.objects.get(user__username=data['username'])
 
         player = await database_sync_to_async(db_get_player)()
+
         # Connect!
         transport.open()
 
@@ -56,8 +54,8 @@ class MultiPlayer(AsyncWebsocketConsumer):
             keys = cache.keys('*%s*' % (self.uuid))
             if keys:
                 self.room_name = keys[0]
-
         await self.send(text_data=json.dumps(data))
+
     async def move_to(self, data):
         await self.channel_layer.group_send(
             self.room_name,
@@ -83,29 +81,52 @@ class MultiPlayer(AsyncWebsocketConsumer):
             }
         )
 
-    async def attack(self,data):
-        print(data['damage'])
+    async def attack(self, data):
+        if not self.room_name:
+            return
+        players = cache.get(self.room_name)
+
+        if not players:
+            return
+
+        for player in players:
+            if player['uuid'] == data['attackee_uuid']:
+                player['hp'] -= 25
+
+        remain_cnt = 0
+        for player in players:
+            if player['hp'] > 0:
+                remain_cnt += 1
+
+        if remain_cnt > 1:
+            if self.room_name:
+                cache.set(self.room_name, players, 3600)
+        else:
+            def db_update_player_score(username, score):
+                player = Player.objects.get(user__username=username)
+                player.score += score
+                player.save()
+            for player in players:
+                if player['hp'] <= 0:
+                    await database_sync_to_async(db_update_player_score)(player['username'], -10)
+                    print("down")
+                else:
+                    await database_sync_to_async(db_update_player_score)(player['username'], 10)
+                    print("up")
         await self.channel_layer.group_send(
             self.room_name,
             {
-                'type':"group_send_event",
-                'event':"attack",
-                'uuid':data['uuid'],
-                'attackee_uuid':data['attackee_uuid'],
-                'x':data['x'],
-                'y':data['y'],
-                'angle':data['angle'],
-                'damage':data['damage'],
-                'ball_uuid':data['ball_uuid'],
-
-
+                'type': "group_send_event",
+                'event': "attack",
+                'uuid': data['uuid'],
+                'attackee_uuid': data['attackee_uuid'],
+                'x': data['x'],
+                'y': data['y'],
+                'angle': data['angle'],
+                'damage': data['damage'],
+                'ball_uuid': data['ball_uuid'],
             }
-
-
-
-
-
-            )
+        )
 
     async def blink(self, data):
         await self.channel_layer.group_send(
@@ -119,26 +140,17 @@ class MultiPlayer(AsyncWebsocketConsumer):
             }
         )
 
-    async def message(self,data):
+    async def message(self, data):
         await self.channel_layer.group_send(
             self.room_name,
             {
-                'type':"group_send_event",
-                'event':"message",
-                'uuid':data['uuid'],
-                'text':data['text'],
+                'type': "group_send_event",
+                'event': "message",
+                'uuid': data['uuid'],
+                'username': data['username'],
+                'text': data['text'],
             }
-
-
-
-
-
-
-
         )
-
-
-
 
     async def receive(self, text_data):
         data = json.loads(text_data)
@@ -155,5 +167,4 @@ class MultiPlayer(AsyncWebsocketConsumer):
             await self.blink(data)
         elif event == "message":
             await self.message(data)
-
 

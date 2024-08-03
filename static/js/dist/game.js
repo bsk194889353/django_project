@@ -81,6 +81,12 @@ class AcGameObject {
 
     update() {  // 每一帧均会执行一次
     }
+    
+
+    late_update(){
+        
+
+    }
 
     on_destroy() {  // 在被销毁前执行一次
     }
@@ -108,6 +114,12 @@ let AC_GAME_ANIMATION = function(timestamp) {
             obj.timedelta = timestamp - last_timestamp;
             obj.update();
         }
+    }
+
+    for(let i = 0;i< AC_GAME_OBJECTS.length;i++){
+        let obj  = AC_GAME_OBJECTS[i];
+        obj.late_update();
+
     }
     last_timestamp = timestamp;
 
@@ -537,6 +549,7 @@ class Player extends AcGameObject {
 
     update() {
         this.spent_time += this.timedelta / 1000;
+        this.update_win();
 
         if (this.character === "me" && this.playground.state === "fighting") {
             this.update_coldtime();
@@ -546,6 +559,16 @@ class Player extends AcGameObject {
         this.render();
     }
 
+    update_win(){
+        if(this.playground.state === "fighting" && this.character === "me" && this.playground.players.length === 1){
+            this.state = "over";
+            this.playground.score_board.win();
+
+
+        }
+
+
+    }
     update_coldtime() {
         this.fireball_coldtime -= this.timedelta / 1000;
         this.fireball_coldtime = Math.max(this.fireball_coldtime, 0);
@@ -649,14 +672,84 @@ class Player extends AcGameObject {
     }
 
     on_destroy() {
-        if (this.character === "me")
+        if (this.character === "me"){
+            if(this.playground.state === "fighting"){
             this.playground.state = "over";
+            this.playground.score_board.lose();
 
+            }
+            
+        }
+            
         for (let i = 0; i < this.playground.players.length; i ++ ) {
             if (this.playground.players[i] === this) {
                 this.playground.players.splice(i, 1);
                 break;
             }
+        }
+    }
+}
+
+
+
+class ScoreBoard extends AcGameObject {
+    constructor(playground) {
+        super();
+        this.playground = playground;
+        this.ctx = this.playground.game_map.ctx;
+
+        this.state = null;  // win: 胜利，lose：失败
+
+        this.win_img = new Image();
+        this.win_img.src = "https://cdn.acwing.com/media/article/image/2021/12/17/1_8f58341a5e-win.png";
+
+        this.lose_img = new Image();
+        this.lose_img.src = "https://cdn.acwing.com/media/article/image/2021/12/17/1_9254b5f95e-lose.png";
+    }
+
+    start() {
+    }
+
+    add_listening_events() {
+        let outer = this;
+        if(this.playground.game_map === null)
+            return;
+        let $canvas = this.playground.game_map.$canvas;
+        
+        $canvas.on('click', function() {
+            outer.playground.hide();
+            outer.playground.root.menu.show();
+        });
+    }
+
+    win() {
+        this.state = "win";
+
+        let outer = this;
+        setTimeout(function() {
+            outer.add_listening_events();
+        }, 1000);
+    }
+
+    lose() {
+        this.state = "lose";
+
+        let outer = this;
+        setTimeout(function() {
+            outer.add_listening_events();
+        }, 1000);
+    }
+
+    late_update() {
+        this.render();
+    }
+
+    render() {
+        let len = this.playground.height / 2;
+        if (this.state === "win") {
+            this.ctx.drawImage(this.win_img, this.playground.width / 2 - len / 2, this.playground.height / 2 - len / 2, len, len);
+        } else if (this.state === "lose") {
+            this.ctx.drawImage(this.lose_img, this.playground.width / 2 - len / 2, this.playground.height / 2 - len / 2, len, len);
         }
     }
 }
@@ -957,11 +1050,34 @@ class AcGamePlayground {
 
     start(){
         let outer=this;
+        let uuid = this.create_uuid();
 
-        $(window).resize(function(){
+        $(window).on(`resize.${uuid}`,function(){
+            console.log("resize");
             outer.resize();
         });
+
+
+
+        if(this.root.AcWingOS){
+            this.root.AcWingOS.api.window.on_close(function(){
+                $(window).off(`resize.${uuid}`);
+
+            });
+        }
     }
+
+    create_uuid() {
+        let res = "";
+        for(let i = 0;i < 8 ; i++){
+            let x = parseInt(Math.floor(Math.random()*10));
+            res += x;
+        }
+        return res;
+    }
+
+
+
     resize(){
         this.width = this.$playground.width();
         this.height = this.$playground.height();
@@ -990,6 +1106,7 @@ class AcGamePlayground {
         this.mode = mode;
         this.state = "waiting";
         this.notice_board = new NoticeBoard(this);
+        this.score_board = new ScoreBoard(this);
         this.player_count = 0;
 
         if(mode === "single mode")
@@ -1011,6 +1128,34 @@ class AcGamePlayground {
     }
 
     hide(){
+
+        while(this.players && this.players.length > 0){
+            this.players[0].destroy();
+
+        }
+
+        if(this.game_map){
+            this.game_map.destroy();
+            this.game_map = null;
+
+        }
+
+        if(this.notice_board){
+            this.notice_board.destroy();
+            this.notice_board = null;
+
+
+        }
+        if(this.score_board){
+            this.score_board.destroy();
+            this.score_board = null;
+
+        }
+
+        this.$playground.empty();
+
+
+
         this.$playground.hide();
     }
 }
