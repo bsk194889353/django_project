@@ -15,6 +15,8 @@ from game.routing import websocket_urlpatterns
 
 from channels.layers import  get_channel_layer
 
+from game.channelsmiddleware import JwtAuthMiddlewareStack
+
 
 channel_layer = get_channel_layer()
 
@@ -24,5 +26,5 @@ channel_layer = get_channel_layer()
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
-    "websocket": AuthMiddlewareStack(URLRouter(websocket_urlpatterns))
+    "websocket": JwtAuthMiddlewareStack(URLRouter(websocket_urlpatterns))
     })
