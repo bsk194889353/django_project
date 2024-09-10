@@ -4,7 +4,7 @@ class Settings{
         this.platform  = "WEB";
         if(this.root.AcWingOS) this.platform = "ACAPP";
         this.username = "";
-        this.photo = "";
+        this.photo = "https://cdn.acwing.com/media/user/profile/photo/355448_sm_2015d90652.jpg";
         this.$settings = $(`
 <div class="ac-game-settings">
     <div class="ac-game-settings-login">
@@ -82,6 +82,10 @@ class Settings{
                 AcWing一键登录
             </div>
         </div>
+    </div>
+
+    <div>
+        游戏说明
     </div>
 </div>
 

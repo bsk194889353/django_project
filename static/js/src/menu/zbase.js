@@ -15,6 +15,17 @@ class AcGameMenu {
         <div class="ac-game-menu-field-item ac-game-menu-field-item-settings">
             退出
         </div>
+        <div class = "single-rule">
+            游戏说明:
+            <br>
+            1.鼠标右键控制移动位置。
+            <br>
+            
+            2.q使用火球技能，鼠标左键发出。
+            <br>
+            3.f使用闪现技能，移动鼠标左键位置。
+            
+        </div>
     </div>
 </div>
 `);
